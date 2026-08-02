@@ -1,0 +1,38 @@
+name: Test formula
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # One runner per platform branch in the formula, so every url+sha256
+        # gets exercised: linux x86_64/arm64 and macOS intel/arm.
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-13, macos-latest]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: Homebrew/actions/setup-homebrew@master
+
+      - name: brew style
+        run: brew style ./Formula/fatou.rb
+
+      - name: brew audit
+        run: brew audit --formula ./Formula/fatou.rb
+
+      - name: brew install (downloads + verifies sha256)
+        run: brew install --formula ./Formula/fatou.rb
+
+      - name: brew test
+        run: brew test ./Formula/fatou.rb

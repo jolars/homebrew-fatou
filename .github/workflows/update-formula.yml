@@ -23,13 +23,32 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: scripts/render-formula.sh
 
-      - name: Commit if changed
+      - name: Detect change
+        id: diff
+        run: |
+          if git diff --quiet -- Formula/fatou.rb; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Formula already up to date."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Bot commits made with GITHUB_TOKEN do not trigger test.yml, so validate
+      # the rendered formula here before publishing it. A broken upstream release
+      # fails loudly instead of shipping a bad formula. (Homebrew is preinstalled
+      # on GitHub-hosted runners.)
+      - name: Validate formula
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          brew style ./Formula/fatou.rb
+          brew audit --formula ./Formula/fatou.rb
+          brew install --formula ./Formula/fatou.rb
+          brew test ./Formula/fatou.rb
+
+      - name: Commit
+        if: steps.diff.outputs.changed == 'true'
         run: |
           set -euo pipefail
-          if git diff --quiet -- Formula/fatou.rb; then
-            echo "Formula already up to date."
-            exit 0
-          fi
           version="$(sed -n 's/.*version "\(.*\)".*/\1/p' Formula/fatou.rb | head -1)"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
