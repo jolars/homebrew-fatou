@@ -54,5 +54,5 @@ if printf '%s' "$rendered" | grep -q '__[A-Z_]*__'; then
   exit 1
 fi
 
-printf '%s' "$rendered" > "$out"
+printf '%s\n' "$rendered" > "$out"
 echo "Wrote $out"
