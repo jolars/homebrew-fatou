@@ -1,0 +1,37 @@
+name: Update formula
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # daily; new fatou releases appear within ~a day
+  workflow_dispatch: # run on demand right after a release
+
+permissions:
+  contents: write # commit the updated formula to this repo via GITHUB_TOKEN
+
+concurrency:
+  group: update-formula
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Render formula from latest fatou release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: scripts/render-formula.sh
+
+      - name: Commit if changed
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- Formula/fatou.rb; then
+            echo "Formula already up to date."
+            exit 0
+          fi
+          version="$(sed -n 's/.*version "\(.*\)".*/\1/p' Formula/fatou.rb | head -1)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "fatou $version"
+          git push
