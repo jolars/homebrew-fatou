@@ -25,14 +25,22 @@ jobs:
 
       - uses: Homebrew/actions/setup-homebrew@master
 
+      # brew audit/test refuse a path argument; register the working tree as a
+      # tap so we can reference the formula by name.
+      - name: Register working tree as tap
+        run: |
+          tap="$(brew --repository)/Library/Taps/jolars/homebrew-fatou"
+          mkdir -p "$(dirname "$tap")"
+          ln -s "$GITHUB_WORKSPACE" "$tap"
+
       - name: brew style
-        run: brew style ./Formula/fatou.rb
+        run: brew style jolars/fatou/fatou
 
       - name: brew audit
-        run: brew audit --formula ./Formula/fatou.rb
+        run: brew audit jolars/fatou/fatou
 
       - name: brew install (downloads + verifies sha256)
-        run: brew install --formula ./Formula/fatou.rb
+        run: brew install jolars/fatou/fatou
 
       - name: brew test
-        run: brew test ./Formula/fatou.rb
+        run: brew test jolars/fatou/fatou

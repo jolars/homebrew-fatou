@@ -40,10 +40,16 @@ jobs:
       - name: Validate formula
         if: steps.diff.outputs.changed == 'true'
         run: |
-          brew style ./Formula/fatou.rb
-          brew audit --formula ./Formula/fatou.rb
-          brew install --formula ./Formula/fatou.rb
-          brew test ./Formula/fatou.rb
+          set -euo pipefail
+          # brew audit/test refuse a path argument; register the working tree as
+          # a tap so the rendered (uncommitted) formula can be referenced by name.
+          tap="$(brew --repository)/Library/Taps/jolars/homebrew-fatou"
+          mkdir -p "$(dirname "$tap")"
+          ln -s "$GITHUB_WORKSPACE" "$tap"
+          brew style jolars/fatou/fatou
+          brew audit jolars/fatou/fatou
+          brew install jolars/fatou/fatou
+          brew test jolars/fatou/fatou
 
       - name: Commit
         if: steps.diff.outputs.changed == 'true'
