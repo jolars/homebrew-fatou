@@ -55,7 +55,9 @@ jobs:
         if: steps.diff.outputs.changed == 'true'
         run: |
           set -euo pipefail
-          version="$(sed -n 's/.*version "\(.*\)".*/\1/p' Formula/fatou.rb | head -1)"
+          # Version is no longer a stanza (Homebrew scans it from the URL);
+          # read it back from the release path for the commit message.
+          version="$(grep -oE 'releases/download/v[^/]+' Formula/fatou.rb | head -1 | sed 's#releases/download/v##')"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -am "fatou $version"

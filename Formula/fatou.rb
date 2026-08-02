@@ -1,7 +1,6 @@
 class Fatou < Formula
   desc "Language server, formatter, and linter for Julia"
   homepage "https://fatou.dev"
-  version "0.9.0"
   license "MIT"
 
   on_macos do
