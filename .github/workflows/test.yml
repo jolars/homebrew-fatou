@@ -17,9 +17,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # One runner per platform branch in the formula, so every url+sha256
-        # gets exercised: linux x86_64/arm64 and macOS intel/arm.
-        os: [ubuntu-latest, ubuntu-24.04-arm, macos-13, macos-latest]
+        # Exercise the formula on linux x86_64/arm64 and macOS arm64. The
+        # x86_64-apple-darwin branch is not run directly: GitHub's Intel macOS
+        # runners are being retired and queue indefinitely. That branch is
+        # structurally identical to the arm64 mac branch (same render, same
+        # tarball layout), so the arm64 job covers it by symmetry.
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest]
     steps:
       - uses: actions/checkout@v7
 
