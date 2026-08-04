@@ -18,6 +18,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - uses: Homebrew/actions/setup-homebrew@1f8e202ffddf94def7f42f6fa3a482e821489f9c # 2026.07.10.1
+
       - name: Render formula from latest fatou release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -35,8 +37,8 @@ jobs:
 
       # Bot commits made with GITHUB_TOKEN do not trigger test.yml, so validate
       # the rendered formula here before publishing it. A broken upstream release
-      # fails loudly instead of shipping a bad formula. (Homebrew is preinstalled
-      # on GitHub-hosted runners.)
+      # fails loudly instead of shipping a bad formula. (brew is put on PATH by
+      # the setup-homebrew step above.)
       - name: Validate formula
         if: steps.diff.outputs.changed == 'true'
         run: |
